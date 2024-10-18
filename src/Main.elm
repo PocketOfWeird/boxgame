@@ -64,21 +64,21 @@ backgrounds =
 
 trickTexts : List String
 trickTexts =
-  [ "Blah Blah 1"
-  , "Blah Blah 2"
-  , "Blah Blah 3"
-  , "Blah Blah 4"
-  , "Blah Blah 5"
-  , "Blah Blah 6"
-  , "Blah Blah 7"
-  , "Blah Blah 8"
-  , "Blah Blah 9"
-  , "Blah Blah 10"
-  , "Blah Blah 11"
-  , "Blah Blah 12"
-  , "Blah Blah 13"
-  , "Blah Blah 14"
-  , "Blah Blah 15"
+  [ "Do the boxtroll dance"
+  , "Dance like a chicken"
+  , "Do 3 jumping jacks"
+  , "Say the ABC's backwards"
+  , "Name 3 types of cheese"
+  , "Bark like a little doggie"
+  , "Spin around 2 times"
+  , "Stand on one leg"
+  , "Clap 7 times"
+  , "Count to 10"
+  , "Count to 11"
+  , "Count to 12"
+  , "Count to 13"
+  , "Count to 14"
+  , "Count to 15"
   ]
 
 successScreens : List String
@@ -91,7 +91,7 @@ successScreens =
 
 easyTrick : Trick
 easyTrick =
-  Trick "boxtroll_fish" "bkg1" "Easy Trick 16 with lots of words. Oh my, so many words!" "SuccessScreen01"
+  Trick "boxtroll_fish" "bkg1" "Give us a high five!" "SuccessScreen01"
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -242,7 +242,7 @@ view model =
                           , style "right" "50px"
                           , style "width" "1350px"
                           , style "z-index" "30" 
-                          , style "font-size" "100px"
+                          , style "font-size" "150px"
                           , style "color" "LemonChiffon"
                           , style "text-shadow" "10px 10px 10px black"
                           , style "font-family" "Copperplate, Papyrus, fantasy"
