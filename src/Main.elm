@@ -32,6 +32,7 @@ type alias Trick =
   , background : String
   , text : String
   , successScreen : String
+  , drumSound : String
   }
 
 type alias PickedTrick =
@@ -73,9 +74,9 @@ trickTexts =
   , "Spin around 2 times"
   , "Stand on one leg"
   , "Clap 7 times"
-  , "Count to 10"
-  , "Count to 11"
-  , "Count to 12"
+  , "Stick out your tongue"
+  , "Hop 3 times"
+  , "Do 1 squat"
   , "Count to 13"
   , "Count to 14"
   , "Count to 15"
@@ -87,11 +88,16 @@ successScreens =
   , "SuccessScreen02"
   , "SuccessScreen03"
   , "SuccessScreen04"
+  , "SuccessScreen05"
+  , "SuccessScreen06"
+  , "SuccessScreen07"
+  , "SuccessScreen08"
+  , "SuccessScreen09"
   ]
 
 easyTrick : Trick
 easyTrick =
-  Trick "boxtroll_fish" "bkg1" "Give us a high five!" "SuccessScreen01"
+  Trick "boxtroll_fish" "bkg1" "Give us a high five!" "SuccessScreen01" ""
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -111,49 +117,79 @@ type Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
+  case (msg, model) of
 
-    KeyboardInput number -> 
+    (KeyboardInput number, WaitingForInput) -> 
       case number of
+        "1" ->
+          ( model
+          , Random.generate TrickPicked pickRandomTrick 
+          )
+
+        "2" ->
+          ( model
+          , Random.generate TrickPicked pickRandomTrick 
+          )
+
+        "3" ->
+          ( model
+          , Random.generate TrickPicked pickRandomTrick 
+          )
+
         "4" ->
-          case model of
-            WaitingForInput ->
-              ( ShowingTrick easyTrick
-              , Cmd.none
-              )
-
-            _ ->
-              doNothingWith model
+          ( ShowingTrick easyTrick
+          , Cmd.none
+          )
         
+        _ ->
+          doNothingWith model
+      
+    (KeyboardInput number, ShowingTrick trick) -> 
+      case number of
+        "1" ->
+          ( ShowingTrick { trick | drumSound = "drum01" }
+          , Cmd.none
+          )
+        
+        "2" ->
+          ( ShowingTrick { trick | drumSound = "drum02" }
+          , Cmd.none
+          )
+
+        "3" ->
+          ( ShowingTrick { trick | drumSound = "drum03" }
+          , Cmd.none
+          )
+
+        "4" ->
+          ( ShowingTrick { trick | drumSound = "drum04" }
+          , Cmd.none
+          )
+
         "s" ->
-          case model of
-            ShowingTrick trick ->   
-              ( ShowingSuccessScreen trick.successScreen
-              , Cmd.none
-              )
+          ( ShowingSuccessScreen trick.successScreen
+          , Cmd.none
+          )
 
-            _ -> 
-              doNothingWith model
+        _ -> 
+          doNothingWith model
 
+    (KeyboardInput number, ShowingSuccessScreen screen) -> 
+      case number of
         "w" ->
           ( WaitingForInput
           , Cmd.none
           )
-
         _ ->
-          case model of
-            WaitingForInput ->
-              ( model
-              , Random.generate TrickPicked pickRandomTrick
-              )
+          doNothingWith model
 
-            _ ->
-              doNothingWith model
-    
-    TrickPicked pickedTrick ->
+    (TrickPicked pickedTrick, WaitingForInput) ->
       ( ShowingTrick (toTrick pickedTrick)
       , Cmd.none
       )
+    
+    _ ->
+      doNothingWith model
 
 
 doNothingWith : Model -> (Model, Cmd Msg)
@@ -189,6 +225,7 @@ toTrick pickedTrick =
   , background = Maybe.withDefault "" (Tuple.first pickedTrick.background)
   , text = Maybe.withDefault "" (Tuple.first pickedTrick.text)
   , successScreen = Maybe.withDefault "" (Tuple.first pickedTrick.successScreen)
+  , drumSound = ""
   }
 
 
@@ -226,6 +263,7 @@ view model =
                           ] 
                           []
                       , viewAudio trick.boxtroll
+                      , viewAudio trick.drumSound
                       ] 
                 , div [] 
                       [ img 
