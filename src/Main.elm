@@ -24,6 +24,7 @@ main =
 type Model 
   = WaitingForInput
   | ShowingTrick Trick
+  | PlayingDrums TrickWithDrum
   | ShowingSuccessScreen Screen
 
 
@@ -32,7 +33,11 @@ type alias Trick =
   , background : String
   , text : String
   , successScreen : String
-  , drumSound : String
+  }
+
+type alias TrickWithDrum =
+  { trick : Trick 
+  , drumSounds : List String
   }
 
 type alias PickedTrick =
@@ -97,7 +102,7 @@ successScreens =
 
 easyTrick : Trick
 easyTrick =
-  Trick "boxtroll_fish" "bkg1" "Give us a high five!" "SuccessScreen01" ""
+  Trick "boxtroll_fish" "bkg1" "Give us a high five!" "SuccessScreen01"
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -144,35 +149,11 @@ update msg model =
         _ ->
           doNothingWith model
       
-    (KeyboardInput number, ShowingTrick trick) -> 
-      case number of
-        "1" ->
-          ( ShowingTrick { trick | drumSound = "drum01" }
-          , Cmd.none
-          )
-        
-        "2" ->
-          ( ShowingTrick { trick | drumSound = "drum02" }
-          , Cmd.none
-          )
+    (KeyboardInput keyboardInput, ShowingTrick trick) -> 
+      TrickWithDrum trick [] |> PlayingDrums |> decidePlayingDrums keyboardInput
 
-        "3" ->
-          ( ShowingTrick { trick | drumSound = "drum03" }
-          , Cmd.none
-          )
-
-        "4" ->
-          ( ShowingTrick { trick | drumSound = "drum04" }
-          , Cmd.none
-          )
-
-        "s" ->
-          ( ShowingSuccessScreen trick.successScreen
-          , Cmd.none
-          )
-
-        _ -> 
-          doNothingWith model
+    (KeyboardInput keyboardInput, PlayingDrums trickWithDrum) ->
+      decidePlayingDrums keyboardInput model
 
     (KeyboardInput number, ShowingSuccessScreen screen) -> 
       case number of
@@ -190,6 +171,46 @@ update msg model =
     
     _ ->
       doNothingWith model
+
+
+decidePlayingDrums : String -> Model -> (Model, Cmd Msg)
+decidePlayingDrums keyboardInput model =
+  case model of 
+    PlayingDrums trickWithDrum ->
+      case keyboardInput of
+        "1" ->
+          ( PlayingDrums (updateTrickWithDrums trickWithDrum "drum01")
+          , Cmd.none
+          )
+          
+        "2" ->
+          ( PlayingDrums (updateTrickWithDrums trickWithDrum "drum02")
+          , Cmd.none
+          )
+        
+        "3" ->
+          ( PlayingDrums (updateTrickWithDrums trickWithDrum "drum03")
+          , Cmd.none
+          )
+        
+        "4" ->
+          ( PlayingDrums (updateTrickWithDrums trickWithDrum "drum04")
+          , Cmd.none
+          )
+        
+        "s" -> 
+          ( ShowingSuccessScreen trickWithDrum.trick.successScreen
+          , Cmd.none
+          )
+
+        _ -> doNothingWith model
+
+    _ -> doNothingWith model
+
+updateTrickWithDrums : TrickWithDrum -> String -> TrickWithDrum
+updateTrickWithDrums trickWithDrum newDrumSound =
+  { trickWithDrum | drumSounds = trickWithDrum.drumSounds ++ [newDrumSound] 
+  }
 
 
 doNothingWith : Model -> (Model, Cmd Msg)
@@ -225,7 +246,6 @@ toTrick pickedTrick =
   , background = Maybe.withDefault "" (Tuple.first pickedTrick.background)
   , text = Maybe.withDefault "" (Tuple.first pickedTrick.text)
   , successScreen = Maybe.withDefault "" (Tuple.first pickedTrick.successScreen)
-  , drumSound = ""
   }
 
 
@@ -251,47 +271,14 @@ view model =
             div [] [ img ([ src (toImgRef "cover") ] ++ fullScreenImageStyle) []]
           
           ShowingTrick trick ->
-            div [] 
-                [ div [] 
-                      [ img 
-                          [ src (toImgRef trick.boxtroll)
-                          , style "position" "absolute"
-                          , style "bottom" "0px"
-                          , style "left" "200px"
-                          , style "width" "250px"
-                          , style "z-index" "20"
-                          ] 
-                          []
-                      , viewAudio trick.boxtroll
-                      , viewAudio trick.drumSound
-                      ] 
-                , div [] 
-                      [ img 
-                          ([ src (toImgRef trick.background)
-                          , style "z-index" "10" ] 
-                          ++ fullScreenImageStyle
-                          ) 
-                          [] 
-                      ] 
-                , div [] 
-                      [ Html.h2 
-                          [ style "position" "absolute"
-                          , style "top" "200px"
-                          , style "right" "50px"
-                          , style "width" "1350px"
-                          , style "z-index" "30" 
-                          , style "font-size" "150px"
-                          , style "color" "LemonChiffon"
-                          , style "text-shadow" "10px 10px 10px black"
-                          , style "font-family" "Copperplate, Papyrus, fantasy"
-                          , style "font-weight" "bold"
-                          , style "word-wrap" "break-word"
-                          , style "white-space" "normal"
-                          ] 
-                          [ text trick.text 
-                          ] 
-                      ]
+            viewShowingTrick trick True
+
+          PlayingDrums trickWithDrum ->
+            div []
+                [ viewShowingTrick trickWithDrum.trick False
+                , div [] (List.map viewAudio trickWithDrum.drumSounds)
                 ]
+
           ShowingSuccessScreen screen ->
             div [] 
                 [ img ([ src (toImgRef screen) ] ++ fullScreenImageStyle) [] 
@@ -299,6 +286,54 @@ view model =
                 ]
 
       ]
+
+
+viewShowingTrick : Trick -> Bool -> Html Msg
+viewShowingTrick trick playSound =
+  div [] 
+      [ div [] 
+            [ img 
+                [ src (toImgRef trick.boxtroll)
+                , style "position" "absolute"
+                , style "bottom" "0px"
+                , style "left" "200px"
+                , style "width" "250px"
+                , style "z-index" "20"
+                ] 
+                []
+            , if playSound then 
+                viewAudio trick.boxtroll
+              else
+                div [] []
+            ] 
+      , div [] 
+            [ img 
+                ([ src (toImgRef trick.background)
+                , style "z-index" "10" ] 
+                ++ fullScreenImageStyle
+                ) 
+                [] 
+            ] 
+      , div [] 
+            [ Html.h2 
+                [ style "position" "absolute"
+                , style "top" "200px"
+                , style "right" "50px"
+                , style "width" "1350px"
+                , style "z-index" "30" 
+                , style "font-size" "150px"
+                , style "color" "LemonChiffon"
+                , style "text-shadow" "10px 10px 10px black"
+                , style "font-family" "Copperplate, Papyrus, fantasy"
+                , style "font-weight" "bold"
+                , style "word-wrap" "break-word"
+                , style "white-space" "normal"
+                ] 
+                [ text trick.text 
+                ] 
+            ]
+      ]
+
 
 viewAudio : String -> Html msg
 viewAudio file = 
