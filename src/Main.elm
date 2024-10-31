@@ -82,9 +82,9 @@ trickTexts =
   , "Stick out your tongue"
   , "Hop 3 times"
   , "Do 1 squat"
-  , "Count to 13"
-  , "Count to 14"
-  , "Count to 15"
+  , "Whistle 'Twinkle Twinkle Little Star'"
+  , "Do 1 pushup"
+  , "What is _ + 6 = 13?"
   ]
 
 successScreens : List String
@@ -342,7 +342,7 @@ viewAudio file =
 
 fullScreenImageStyle : List (Html.Attribute msg)
 fullScreenImageStyle =
-  [style "position" "absolute", style "top" "25px", style "width" "100%"]
+  [ style "position" "absolute", style "top" "25px", style "width" "100%", style "overflow" "hidden" ]
 
 toImgRef : String -> String
 toImgRef file =
